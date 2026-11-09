@@ -1267,9 +1267,10 @@ class Component extends DCLogic {
     if (this._fxMerged || !all.length) return;
     const FX = window.FANTRAX_ADP || {};
     if (!Object.keys(FX).length) { all.forEach(p => { p.market = p.consensus; }); return; }
-    const nrm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+    const nrm = s => this.wvNrm(s);
+    const FXK = {}; Object.keys(FX).forEach(k => { FXK[nrm(k)] = FX[k]; });
     all.forEach(p => {
-      const f = FX[nrm(p.name)];
+      const f = FXK[nrm(p.name)];
       p.adp = f && f.adp != null ? f.adp : null;
       p.ftRk = f && f.rk != null ? f.rk : null;
       // market = ce que la salle voit : ADP Fantrax, repli NHL.com pour les absents
@@ -1400,7 +1401,7 @@ class Component extends DCLogic {
   }
   async applyFantraxDraft(j) {
     const all = window.DRAFT_PLAYERS || [];
-    const nrm = s => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+    const nrm = s => this.wvNrm(s);
     let picks = this.fxPicksArray(j);
     if (!picks) { this.setState({ syncStatus: 'Réponse inattendue — je ne trouve pas la liste des picks dans ce JSON.' }); return; }
     const okey = ['overallPick', 'pickNumber', 'overall', 'pick'].find(k => picks[0][k] != null);
@@ -1437,6 +1438,7 @@ class Component extends DCLogic {
     }
     const byName = {};
     all.forEach(p => { byName[nrm(p.name)] = p; byName[key(p.name)] = p; });
+    this.NAME_ALIAS().forEach(([fx, board]) => { const p = byName[nrm(board)]; if (p) byName[key(fx)] = p; });
     const drafted = {}; let order = []; let miss = 0; const missed = [];
     const ovMap = {};   // id du board → vrai numéro de pick Fantrax
     const offBoard = []; // picks réels dont le joueur n'est pas dans le pool des 250
@@ -1665,7 +1667,7 @@ class Component extends DCLogic {
     return this._fxIdsPromise;
   }
   async fxSyncPositions() {
-    const nrm = s => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+    const nrm = s => this.wvNrm(s);
     const flip = s => { const p = String(s).split(',').map(x => x.trim()); return p.length === 2 ? p[1] + ' ' + p[0] : s; };
     this.setState({ posStatus: 'Lecture des alignements Fantrax…' });
     let R, ids;
@@ -1766,7 +1768,14 @@ class Component extends DCLogic {
       SCALE: { ros: 40, bal: 50, wk: 6 }
     };
   }
-  wvNrm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, ''); }
+  // Joueurs dont Fantrax écrit le prénom autrement que le tableau (liste dans players.js)
+  NAME_ALIAS() { return window.NAME_ALIAS || []; }
+  wvNrm(s) {
+    const base = x => String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+    if (!this._aliasMap) { this._aliasMap = {}; this.NAME_ALIAS().forEach(([fx, board]) => { this._aliasMap[base(fx)] = base(board); }); }
+    const k = base(s);
+    return this._aliasMap[k] || k;
+  }
   wvPosOf(pos) {
     const p = String(pos || '').toUpperCase().split(/[,/ ]+/).filter(Boolean);
     if (!p.length) return null;
@@ -2548,7 +2557,7 @@ class Component extends DCLogic {
     const fxPos = S.fxPos || this._fxPos || {};
     const fxOffPos = S.fxOffPos || this._fxOffPos || {};
     const fxRoster = S.fxRoster || this._fxRoster || null;
-    const nrm = s => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+    const nrm = s => this.wvNrm(s);
     const T = {};
     if (fxRoster && Object.keys(fxRoster).length) {
       // source de verite : les rosters lus sur Fantrax (positions et actif/reserve reels)

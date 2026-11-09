@@ -5,8 +5,12 @@ window.FANTRAX_ADP = {"nathanmackinnon":{"n":"Nathan MacKinnon","adp":1.3,"rk":1
 (function () {
   var all = window.DRAFT_PLAYERS || [];
   var nrm = function (s) { return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, ''); };
+  // nom Fantrax → nom du tableau (window.NAME_ALIAS, défini dans players.js)
+  var alias = {};
+  (window.NAME_ALIAS || []).forEach(function (a) { alias[nrm(a[1])] = nrm(a[0]); });
   all.forEach(function (p) {
-    var f = window.FANTRAX_ADP[nrm(p.name)];
+    var k = nrm(p.name);
+    var f = window.FANTRAX_ADP[k] || window.FANTRAX_ADP[alias[k]];
     p.adp = f && f.adp != null ? f.adp : null;
     p.ftRk = f && f.rk != null ? f.rk : null;
     p.market = p.adp != null ? p.adp : 300 + (p.consensus || 300);

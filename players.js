@@ -313,6 +313,9 @@
   });
 
   window.DRAFT_PLAYERS = players;
+  // Joueurs dont Fantrax écrit le prénom autrement que ce tableau : [nom Fantrax, nom du tableau].
+  // Utilisé partout où on compare des noms (fantrax.js, ballottage, sync, alignements).
+  window.NAME_ALIAS = [['Daniel Vladar', 'Dan Vladar'], ['Alex Carrier', 'Alexandre Carrier']];
   window.DRAFT_META = {
     generated: '2026-09-05',
     source: 'fichier 09 — tableau final corrigé (API officielle LNH + top 250 NHL.com du 2026-09-02)',
