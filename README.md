@@ -5,7 +5,12 @@ Outil de repêchage et de gestion de saison pour la ligue Fantrax « Pool du CH 
 
 ## Ouvrir l'app
 
-Ouvrir `Draft Board.dc.html` dans un navigateur. Il faut Internet : React et Babel se chargent depuis unpkg.
+Ouvrir **`Pool-du-CH.html`** dans Chrome (ou Edge, Safari). Ce fichier contient toute l'app : il marche seul,
+même copié ailleurs. Internet sert seulement pour la synchro Fantrax, les stats LNH et les polices.
+
+`Pool-du-CH.html` est généré : après un changement dans `Draft Board.dc.html` ou un fichier `.js`,
+relancer `python3 build.py` pour le refaire. (`Draft Board.dc.html` seul a besoin des autres fichiers
+à côté de lui et télécharge React depuis unpkg.)
 
 ## Fichiers utilisés par l'app
 
